@@ -2,11 +2,10 @@
 
 # This scrip should be run on a server with more than 64 GB mem
 # Preprocess a sample(unmapped.bam)
-# Step1: Filtering Low-Complexity reads using prinseq-lite-0.20.4
-# Step2: Filtering reads with length < 20bp, using prinseq-lite-0.20.4
-# Step3: Filtering reads from PhiX174, GI number: gi|9626372|ref|NC_001422.1, using bowtie2 --very-sensitive-local
-# Step4: Filtering reads from hg38 + all contigs, using SNAP -mrl 20
-# Step5: Filtering reads from ribosome RNA(SSU + LSU, downloaded from SILVA DB), using SNAP -mrl 20
+# Step1: Filtering Low-Complexity reads and reads with length < 20bp using prinseq-lite-0.20.4
+# Step2: Filtering reads from PhiX174, GI number: gi|9626372|ref|NC_001422.1, using SNAP (bowtie2 --very-sensitive-local)
+# Step3: Filtering reads from hg38 + all contigs, using SNAP -mrl 20
+# Step4: Filtering reads from ribosome RNA(SSU + LSU, downloaded from SILVA DB), using SNAP -mrl 20
 
 
 
@@ -69,13 +68,13 @@ if [[ ! -f $output_sample_dir/unmapped.filterLC.fastq ]] && [[ ! -f $output_samp
     if [[ $? -ne 0 ]]; then
     	error_exit "ERROR exists in perl prinseq-lite.pl commond"
     else
-		[ -f $output_sample_dir/unmapped.fastq ] && rm $output_sample_dir/unmapped.fastq
+    	echo "Low-Complexity reads and short reads(<20bp) are filtered!"
 	fi
 
 fi
 
 #######################
-#Step3: Trim spiked-in phi-X reads. viral folder name: Enterobacteria_phage_phiX174_sensu_lato_uid14015. GI number: gi|9626372|ref|NC_001422.1
+#Step3: Filter spiked-in phi-X reads. viral folder name: Enterobacteria_phage_phiX174_sensu_lato_uid14015. GI number: gi|9626372|ref|NC_001422.1
 #Use SNAP aligner
 #SNAP index path: /PHShome/tw786/neurogen/Tao/fna/Viral/ftp.ncbi.nlm.nih.gov/genomes/Viruses/Enterobacteria_phage_phiX174_sensu_lato_uid14015/snap_index
 
@@ -87,34 +86,12 @@ if [[ ! -f $output_sample_dir/unmapped.filterLC.filterPhiX.fastq ]]; then
 	if [[ $? -ne 0 ]]; then
 		error_exit "ERROR exists in snap-aligner single ${phiX_index_path} ..."
 	fi
-	# Transform bam file to fastq as input of bowtie2
-	# bam2fastx -q -Q -A -N -o $output_sample_dir/unmapped.filterLC.filterPhiX_snap.fastq  $output_sample_dir/unmapped.filterLC.filterPhiX_snap.bam
-
-	# secondly, sensitivly filtering reads again from Phix using bowtie2 --very-sensitive-local
-	# remove phi-X reads again using bowtie2. That's because snap cannot well handle short reads such like reads length <= 20 or a few longer than 20
-	# phiX_bowtie2_index_path=/PHShome/tw786/neurogen/Tao/fna/Viral/ftp.ncbi.nlm.nih.gov/genomes/Viruses/Enterobacteria_phage_phiX174_sensu_lato_uid14015/Enterobacteria_phage_phiX174_sensu_lato_uid14015
-	# bowtie2 -x $phiX_bowtie2_index_path -U $output_sample_dir/unmapped.filterLC.filterPhiX_snap.fastq \
-	# 		 --no-unal -S $output_sample_dir/unmapped.filterLC.bowtie2PhiX.sam --un $output_sample_dir/unmapped.filterLC.filterPhiX.fastq --very-sensitive-local
 	if [[ $? -eq 0 ]]; then
 		echo "Filter PhiX contamination, finished!"
-		#remove some internal files
-		#rm $output_sample_dir/unmapped.filterLC.filterPhiX_snap.bam
-		# [ -f $output_sample_dir/unmapped.filterLC.filterPhiX_snap.fastq ] && rm $output_sample_dir/unmapped.filterLC.filterPhiX_snap.fastq
 	fi
 
 
 fi
-
-# remove reads with length < 20bp
-# if [[ ! -f $output_sample_dir/unmapped.filterLC.filterPhiX.lg20.fastq ]]; then
-# 	perl $HOME/prinseq-lite-0.20.4/prinseq-lite.pl -fastq $output_sample_dir/unmapped.filterLC.filterPhiX.fastq -min_len 20 \
-# 	-out_format 3 -out_good $output_sample_dir/unmapped.filterLC.filterPhiX.lg20  \
-# 	-out_bad $output_sample_dir/unmapped.filterLC.filterPhiX.sht20
-
-# fi
-
-
-
 
 
 #######################
