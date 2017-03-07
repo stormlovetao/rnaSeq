@@ -1,16 +1,14 @@
 """
-make a statistics what kinds of viruses and bacterias exist in all samples.
-
-Is there any difference among samples?
-
-we can do the analysis on different levels(species, genus, family)
-
+Reference: CallVirusBac.py
+Make a table: rows indicate microbime, colomns show samples, each cell represents reads number above a threshold   
 """
+
 import os
 import sys
 import string
 import xlwt
 import argparse
+
 def worksheet_write_header(worksheet, sample_list, sample_list_switch):
 	worksheet.write(0,0,'Samples')
 	i = 1
@@ -33,18 +31,12 @@ if __name__ == '__main__':
 	cmd_parser = argparse.ArgumentParser()
 	cmd_parser.add_argument('-l', action = 'store', dest = "level_mark",
 							help = "essential, S/G/F")
-	cmd_parser.add_argument('-p', action = 'store', dest = "ppm_thr", type = float,
-							help = "essential, global reads threshold")
+	
 	cmd_parser.add_argument('-s', action = 'store', dest = "samples_thr", type = int,
-							help = "essential, global samples threshold")
-	cmd_parser.add_argument('-vp', action = 'store', dest = "virus_ppm_thr",type = float,
-							help = "reads number threshold set for viruses")
-	cmd_parser.add_argument('-bp', action = 'store', dest = "bacteria_ppm_thr",type = float,
-							help = "reads number threshold set for bacteria")
-	cmd_parser.add_argument('-vs', action = 'store', dest = "virus_samples_thr",type = int,
-							help = "samples number threshold set for viruses")
-	cmd_parser.add_argument('-bs', action = 'store', dest = "bacteria_samples_thr",type = int,
-							help = "samples number threshold set for bacteria")
+							help = "global samples threshold, default=1")
+	cmd_parser.add_argument('-rt', action = 'store', dest = "reads_thr",type = int,
+							help = "reads number threshold set for viruses, default=0")
+
 
 	result = cmd_parser.parse_args()
 
@@ -53,36 +45,23 @@ if __name__ == '__main__':
 		sys.exit(1)
 	else:
 		level_mark = result.level_mark
-	if result.ppm_thr == None :
-		print "No reads threshold specified, use argument '-h' for help!"
-		sys.exit(1)
-	else:
-		ppm_thr = result.ppm_thr
+	
 	if result.samples_thr == None :
-		print "No samples threshold specified, use argument '-h' for help!"
-		sys.exit(1)
+		samples_thr = 1
 	else:
-		samples_thr = result.samples_thr
+		samples_thr = string.atoi(result.samples_thr)
+	if result.reads_thr == None:
+		reads_thr = 0
+	else:
+		reads_thr = string.atoi(result.reads_thr)
+
 	#set XXX_samples_thr
 	virus_samples_thr = samples_thr
 	bacteria_samples_thr = samples_thr
 	archaea_samples_thr = samples_thr
 	eukaryota_samples_thr = samples_thr
 
-	virus_ppm_thr = ppm_thr
-	bacteria_ppm_thr = ppm_thr
-	archaea_ppm_thr = ppm_thr
-	eukaryota_ppm_thr = ppm_thr
-
-	if result.virus_samples_thr != None:
-		virus_samples_thr = string.atof(result.virus_samples_thr)
-	if result.bacteria_samples_thr != None:
-		bacteria_samples_thr = string.atof(result.bacteria_samples_thr)
-	if result.virus_ppm_thr != None:
-		virus_ppm_thr = string.atof(result.virus_ppm_thr)
-	if result.bacteria_ppm_thr != None:
-		bacteria_ppm_thr = string.atof(result.bacteria_ppm_thr)
-
+	
 
 	type_samples_thr_dic = {'Virus':virus_samples_thr, 'Bacteria':bacteria_samples_thr, 'Archaea':archaea_samples_thr, 'Eukaryota': eukaryota_samples_thr}
 	
@@ -94,7 +73,8 @@ if __name__ == '__main__':
 		sys.exit(1)
 
 	
-	samples_root_dir = '/PHShome/tw786/neurogen/Tao/kraken_output/'
+	samples_root_dir = '/PHShome/tw786/neurogen/Tao/GTEx_output/'
+	#samples_root_dir = '/PHShome/tw786/neurogen/Tao/kraken_output/'
 	samples_dic = {}
 
 	sample_list = []
@@ -103,30 +83,10 @@ if __name__ == '__main__':
 	eukaryota_list = []
 	archaea_list = []
 
-	sample_reads_filepath = '/PHShome/tw786/neurogen/Tao/kraken_output_tables/sampleIDtotal_sequenced_reads.txt'
-	sample_reads_dic = {}
-	sample_reads_fp = open(sample_reads_filepath, 'r')
-	for i in range(3):
-		line = sample_reads_fp.readline()
-	while True:
-		line = sample_reads_fp.readline()
-		if not line:
-			break
-		linesplit = line.strip().split()
-		sample_name = linesplit[0].strip()
-		sample_reads_count = string.atoi(linesplit[1].replace(',',''))
-		sample_reads_dic[sample_name] = sample_reads_count
-
-
+	
 	for x in os.listdir(samples_root_dir):
 		if not os.path.isdir(samples_root_dir + x):
 			continue
-		if not sample_reads_dic.has_key(x):
-			print x,"don't know its total reads number"
-			continue
-		x_reads_num = sample_reads_dic[x]
-		x_reads_per_million = float(x_reads_num)/1000000
-		
 		kraken_output_path = samples_root_dir + x + '/kraken_output.report'
 
 		if not os.path.isfile(kraken_output_path):
@@ -178,26 +138,23 @@ if __name__ == '__main__':
 
 			if linesplit[3] == level_mark:
 				name = linesplit[5].lstrip().strip()
-				if name == 'Enterobacteria phage phiX174 sensu lato':
-					continue
+				
 				reads_num = string.atoi(linesplit[1].strip())
-				ppm = round(reads_num/x_reads_per_million, 3)
-				# if reads_num < reads_thr: # reads number threshold is appied here!
-				# 	continue
-				if viruses_start and ppm >= virus_ppm_thr:
-					viruses_dic[name] = ppm
+				
+				if viruses_start and reads_num >= reads_thr:
+					viruses_dic[name] = reads_num
 					viruses_list.append(name)
 					
-				if bacteria_start and ppm >= bacteria_ppm_thr:
-					bacteria_dic[name] = ppm
+				if bacteria_start and reads_num >= reads_thr:
+					bacteria_dic[name] = reads_num
 					bacteria_list.append(name)
 				
-				if eukaryota_start and ppm >= eukaryota_ppm_thr:
-					eukaryota_dic[name] = ppm
+				if eukaryota_start and reads_num >= reads_thr:
+					eukaryota_dic[name] = reads_num
 					eukaryota_list.append(name)
 
-				if archaea_start and ppm >= archaea_ppm_thr:
-					archaea_dic[name] =  ppm
+				if archaea_start and reads_num >= reads_thr:
+					archaea_dic[name] =  reads_num
 					archaea_list.append(name)
 
 		
@@ -220,8 +177,8 @@ if __name__ == '__main__':
 	eukaryota_list = list(set(eukaryota_list))
 	sample_list = sorted(list(set(sample_list)))
 
-	
-	table_path = '/PHShome/tw786/neurogen/Tao/kraken_output_tables/kraken_output.table_'+level_mark +'_'+ str(ppm_thr)+'.xls'
+	table_path = '/PHShome/tw786/neurogen/Tao/kraken_output_tables/gtexTotalReadsNumber.xls'
+	#table_path = '/PHShome/tw786/neurogen/Tao/kraken_output_tables/BRAINCODETotalReadsNumber.xls'
 	workbook = xlwt.Workbook()
 
 	type_dic = {'Virus':viruses_list, 'Bacteria':bacteria_list, 'Archaea':archaea_list, 'Eukaryota':eukaryota_list}
@@ -230,23 +187,53 @@ if __name__ == '__main__':
 	for D_type in type_dic:
 		worksheet = workbook.add_sheet(D_type)
 		
+		# sort colomn/sample by average/sum of each colomn
 		sample_list_switch = {}
+		colomn_sum_dic = {}
 		for sample in sample_list:
 			switch = 0
+			colomn_sum = 0
 			for species in samples_dic[sample][D_type]:
 				if samples_dic[sample][D_type][species] > 0:
-					switch = 1
-					break
+					switch += 1
+					colomn_sum += samples_dic[sample][D_type][species]
 			sample_list_switch[sample] = switch
+			colomn_sum_dic[sample] = colomn_sum
+		new_sample_list = []
+		new_sample_list_speciesNum = []
+		new_sample_list_speciesSum = []
+		for sample in sample_list_switch:
+			if sample_list_switch[sample] > 0:
+				new_sample_list.append(sample)
+				new_sample_list_speciesNum.append(sample_list_switch[sample])
+				new_sample_list_speciesSum.append(colomn_sum_dic[sample])
 
-		worksheet_write_header(worksheet, sample_list, sample_list_switch)
+		new_sample_list_speciesSum,new_sample_list=(list(x) for x in zip(*sorted(zip(new_sample_list_speciesSum, new_sample_list),reverse=True)))
+		if D_type == 'Virus':
+			print new_sample_list_speciesSum
+			print new_sample_list
+		worksheet_write_header(worksheet, new_sample_list, sample_list_switch)
 		
+		# sort row/species by average/sum of each row
+		v_list = type_dic[D_type]
+		v_list_sampleSum = []
+		# how many sample contain this species
+		for species in v_list:
+			sample_count = 0
+			for sample in new_sample_list:
+				if 	samples_dic[sample][D_type].has_key(species):
+					sample_count += samples_dic[sample][D_type][species]
+			v_list_sampleSum.append(sample_count)
+		v_list_sampleSum, v_list = (list(x) for x in zip(*sorted(zip(v_list_sampleSum, v_list),reverse=True)))
+
+
+
 		r = 1
-		for species in type_dic[D_type]:
+		for species in v_list:
 			tmp_list = []
 			tmp_list.append(species)
 			samples_count = 0
-			for sample in sample_list:
+			for sample in new_sample_list:
 				if sample_list_switch[sample] == 0:
 					continue
 				if samples_dic[sample][D_type].has_key(species):
@@ -258,22 +245,3 @@ if __name__ == '__main__':
 				worksheet_write(worksheet, r, tmp_list)
 				r += 1
 	workbook.save(table_path)
-
-
-
-	
-	
-	
-
-
-
-
-
-
-
-
-
-
-
-
-

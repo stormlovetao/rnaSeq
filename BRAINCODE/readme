@@ -1,0 +1,27 @@
+# Created on May 5, 2016
+
+In earlier version, Braincode data(141 samples) are processed under this pipeline:
+Reference: pipeline/preprocess_pipeline_core.sh
+
+# This script should be run on a server with more than 64 GB mem
+# Preprocess a sample(unmapped.bam)
+# Step1: Filtering Low-Complexity reads and reads with length < 20bp using prinseq-lite-0.20.4
+# Step2: Filtering reads from PhiX174, GI number: gi|9626372|ref|NC_001422.1, using SNAP (bowtie2 --very-sensitive-local)
+# Step3: Filtering reads from hg38 + all contigs, using SNAP -mrl 20
+# Step4: Filtering reads from ribosome RNA(SSU + LSU, downloaded from SILVA DB), using SNAP -mrl 20
+# Step5: CirRna
+# Step6: gene fusion
+# Step7: run kraken
+
+But we adopt a conciser pipeline on GTEx data (13 brain regions, 1419 samples):
+Reference: /GTEx/*
+That pipeline is under following:
+# Step1: QC
+		# Quality control
+		# Filter Low complexity reads (dust, threshold=7)
+		# Trim 3'/5' PolyA/T
+		# Trim 5' low quality(threshold = 10)
+		# Filter sequence with length less than 20
+# Step2: Run Kraken
+
+Now, I want to rerun braincode data using the gtex pipeline to double check the braincode results. Or the robustness of our first pipeline.

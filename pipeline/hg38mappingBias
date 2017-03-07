@@ -1,0 +1,50 @@
+bowtie2 -x ~/neurogen/Tao/hg38/GCA_000001405.15_GRCh38_full_analysis_set.fna.bowtie_index -U ./unmapped.filterLC.filterPhiX.fastq -S unmapped.filterLC.filterPhiX.hg38_bowtie2.sam
+25456426 reads; of these:
+  25456426 (100.00%) were unpaired; of these:
+    12566642 (49.37%) aligned 0 times
+    6223814 (24.45%) aligned exactly 1 time
+    6665970 (26.19%) aligned >1 times
+50.63% overall alignment rate
+
+
+
+
+snap-aligner single ./GCA_000001405.15_GRCh38_full_analysis_set.fna.snap_index/ ../kraken_output/PD_BN04-42_SNDA_5_rep1/unmapped.filterLC.filterPhiX.bam -o ../kraken_output/PD_BN04-42_SNDA_5_rep1/unmapped.filterLC.filterPhiX.hg38_snap.bam
+------------------------------------------------------------
+
+Successfully completed.
+
+Resource usage summary:
+
+   CPU time   :   4950.34 sec.
+   Max Memory :     33661 MB
+   Max Swap   :     42580 MB
+
+   Max Processes  :         3
+   Max Threads    :        28
+
+The output (if any) follows:
+
+Welcome to SNAP version 1.0beta.20.
+
+Loading index from directory... 152s.  3209686428 bases, seed size 20
+Aligning.
+Total Reads    Aligned, MAPQ >= 10    Aligned, MAPQ < 10     Unaligned              Too Short/Too Many Ns  %Pairs	Reads/s   Time in Aligner (s)
+25,456,426     13,738,194 (53.97%)    6,234,941 (24.49%)     5,093,251 (20.01%)     390,040 (1.53%)        0.00%%	59,473    428
+
+
+
+
+bwa mem
+
+bwa mem ~/neurogen/Tao/hg38/GCA_000001405.15_GRCh38_full_analysis_set.fna.bwa_index/GCA_000001405.15_GRCh38_full_analysis_set.fna unmapped.filterLC.filterPhiX.fastq > unmapped.filterLC.filterPhiX.hg38_bwamem.sam
+
+unaligned
+samtools view -c -f 4 unmapped.filterLC.filterPhiX.hg38_bwamem.sam 
+888,280
+>>> 25456426 - 888280
+24,568,146
+
+Aligned:
+samtools view -c -F 4 unmapped.filterLC.filterPhiX.hg38_bwamem.sam 
+29,911,964(maybe some reads have multi-locations)

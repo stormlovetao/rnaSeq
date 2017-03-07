@@ -1,0 +1,61 @@
+st login: Wed Nov  4 19:28:54 on ttys000
+TaodeMacBook-Pro:~ tao$ ./server.sh 
+spawn ssh tw786@erisone.partners.org
+tw786@erisone.partners.org's password: 
+Last login: Wed Nov  4 09:50:53 2015 from taodembp.partners.org
+
+--------------------------------------------------------------------------------
+|         Welcome to the ERISOne, a Scientific Computing environment           |
+|       managed by Enterprise Research Infrastructure & Services (ERIS)        |
+|------------------------------------------------------------------------------|
+|                                                                              |
+|    For information on how to use the cluster, see our knowledge base at:     |
+|      https://rc.partners.org/kb/computational-resources/linux-cluster        |
+|                                                                              |
+|  Remember to always:                                                         |
+|    1) Run jobs through the job scheduler and reserve resources               |
+|    2) Not run computational jobs on the login nodes (eris1n2 and eris1n3)    |
+|    3) Ensure data is backed up                                               |
+|                                                                              |
+|  Email questions, problems and software requests to hpcsupport@partners.org  |
+--------------------------------------------------------------------------------
+
+                             ~ Message of the day ~                             
+ Ensure jobs run smoothly by selecting the right queue and reserving resources: 
+               http://rc.partners.org/kbase?cat_id=47&art_id=278                
+                                       ~                                        
+[tw786@eris1n3 ~]$ bjobs
+No unfinished job found
+[tw786@eris1n3 ~]$ cd neurogen/Tao/run_output/
+[tw786@eris1n3 run_output]$ cd PD_BN05-17_SNDA_5_rep1
+[tw786@eris1n3 PD_BN05-17_SNDA_5_rep1]$ Oyster_mushroom_spherical_virus_uid14951
+-bash: Oyster_mushroom_spherical_virus_uid14951: command not found
+[tw786@eris1n3 PD_BN05-17_SNDA_5_rep1]$ cd Oyster_mushroom_spherical_virus_uid14951
+[tw786@eris1n3 Oyster_mushroom_spherical_virus_uid14951]$ ls
+lc_jobout            snap_output.bad.fastq  snap_output.fastq.log
+lc_stdout            snap_output.bam        snap_output.sam
+snap_mapping_jobout  snap_output.fastq      stdout.txt
+[tw786@eris1n3 Oyster_mushroom_spherical_virus_uid14951]$ vim lc_jobout 
+
+Resource usage summary:
+
+    CPU time   :     35.17 sec.
+    Max Memory :        19 MB
+    Max Swap   :       588 MB
+
+    Max Processes  :         6
+    Max Threads    :         7
+
+The output (if any) follows:
+
+Use of uninitialized value $fhmappings in unlink at /PHShome/tw786/prinseq-lite-0.20.4/prinseq-lite.pl line 1833.
+Input and filter stats:
+        Input sequences: 500,239
+        Input bases: 36,932,838
+        Input mean length: 73.83
+        Good sequences: 0 (0.00%)
+        Bad sequences: 500,239 (100.00%)
+        Bad bases: 36,932,838
+        Bad mean length: 73.83
+        Sequences filtered by specified parameters:
+        lc_method: 500239
